@@ -1,0 +1,482 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>线段树从入门到弃疗 | guhl37</title>
+<link rel="shortcut icon" href="https://guhl37.github.io/favicon.ico?v=1594125348051">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://guhl37.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="线段树从入门到弃疗 | guhl37 - Atom Feed" href="https://guhl37.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+Ps: 本文代码部分未经压力测试，不保证完全正确，如有错误请联系博主
+Introduction
+许多算法的本质是统计\large\text{许多算法的本质是统计}
+许多算法的本质是统计
+
+什么是线段树
+
+
+线段树(Segment..." />
+    <meta name="keywords" content="笔记" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://guhl37.github.io">
+  <img class="avatar" src="https://guhl37.github.io/images/avatar.png?v=1594125348051" alt="">
+  </a>
+  <h1 class="site-title">
+    guhl37
+  </h1>
+  <p class="site-description">
+    星河滚烫，你是人间理想
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+      
+        <a href="https://www.cnblogs.com/pyyyyyy/" class="menu">
+          博客园
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/guhl37" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+        <a href="https://www.zhihu.com/people/ni-ting-feng-zai-hou" target="_blank">
+          <i class="ri-zhihu-line"></i>
+        </a>
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              线段树从入门到弃疗
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-07-07
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="https://guhl37.github.io/tag/nOTR5ebPL/" class="post-tag">
+                  # 笔记
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://wx1.sbimg.cn/2020/07/05/2yZej.jpg" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<p>Ps: 本文代码部分未经压力测试，不保证完全正确，如有错误请联系博主</p>
+<h1 id="introduction">Introduction</h1>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mstyle mathsize="1.2em"><mtext>许多算法的本质是统计</mtext></mstyle></mrow><annotation encoding="application/x-tex">\large\text{许多算法的本质是统计}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.819996em;vertical-align:0em;"></span><span class="mord text sizing reset-size6 size7"><span class="mord cjk_fallback">许多算法的本质是统计</span></span></span></span></span></span></p>
+<ul>
+<li>什么是线段树</li>
+</ul>
+<blockquote>
+<p>线段树(Segment Tree)是一种基于分治思想的二叉树结构，用于区间上信息的统计，相较于基于二进制进行区间划分的树状数组而言，线段树是一种更加通用的数据结构，而且代码量仅比<a href="https://www.cnblogs.com/pyyyyyy/p/13190339.html">树状数组</a>大亿点点</p>
+</blockquote>
+<p>本文将会侧重于进阶内容，如果你没学过或者不熟悉线段树请看这里<a href="https://www.cnblogs.com/pyyyyyy/p/11105650.html">线段树学习笔记</a></p>
+<ul>
+<li>什么时候用到线段树</li>
+</ul>
+<blockquote>
+<p>统计量可以合并，修改量可以合并，通过修改量可直接修改统计量</p>
+</blockquote>
+<p><strong>满足区间加法即可使用线段树维护信息</strong></p>
+<h1 id="普通线段树">普通线段树</h1>
+<h2 id="储存">储存</h2>
+<blockquote>
+<p>这里使用结构体储存线段树，我不太喜欢开一堆数组<br>
+在理想的情况下，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span></span></span></span>个叶子节点的满二叉树有<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>N</mi><mo>+</mo><mfrac><mi>N</mi><mn>2</mn></mfrac><mo>+</mo><mfrac><mi>N</mi><mn>4</mn></mfrac><mo>+</mo><mo>⋯</mo><mo>+</mo><mn>2</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>2</mn><mi>N</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N+\frac{N}{2}+\frac{N}{4}+\cdots+2+1=2N-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.217331em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.872331em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.217331em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.872331em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">4</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord">2</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span>个节点，当时由于使用这种存储方法会在最后一层产生空余，<strong>所以数组要开到<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>4</mn><mi>N</mi></mrow><annotation encoding="application/x-tex">4N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">4</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span></span></span></span></strong></p>
+</blockquote>
+<pre><code class="language-cpp">struct SegmentTree
+{
+    int l,r;//该节点的区间
+    int dat;//维护的信息
+}t[N*4];//4N!
+</code></pre>
+<h2 id="建树">建树</h2>
+<blockquote>
+<p>在区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mn>1</mn><mo separator="true">,</mo><mi>n</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[1,n]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">]</span></span></span></span>上建立线段树，注意最后要从下往上传递信息</p>
+</blockquote>
+<pre><code class="language-cpp">void build(int p,int l,int r)
+{
+    t[p].l=l,t[p].r=r;
+    if(l==r){t[p].dat=a[l];return ;}
+    int mid=(l+r)&gt;&gt;1;
+    build(p&lt;&lt;1,l,mid);
+    build(p&lt;&lt;1|1,mid+1,r);
+    t[p].dat=max(t[p&lt;&lt;1].dat,t[p&lt;&lt;1|1].dat);
+}
+</code></pre>
+<h2 id="单点修改">单点修改</h2>
+<blockquote>
+<p>相当于修改区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>x</mi><mo separator="true">,</mo><mi>x</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[x,x]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">x</span><span class="mclose">]</span></span></span></span>，只需要递归找到代表这个区间的叶子节点，然后修改，再从下往上更新一下即可</p>
+<p>复杂度为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>log</mi><mo>⁡</mo><mi>n</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(\log n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span></span></span></span></p>
+</blockquote>
+<pre><code class="language-cpp">int change(int p,int x,int y)
+{
+    if(t[p].l==t[p].r){t[p].dat=y;return;}
+    int mid=(t[p].l+t[p].r)&gt;&gt;1;
+    if(x&lt;=mid) change(p&lt;&lt;1,x,y);
+    else change(p&lt;&lt;1|1,x,y);
+    t[p].dat=max(t[p&lt;&lt;1].dat,t[p&lt;&lt;1|1].dat);
+}
+</code></pre>
+<h2 id="区间查询">区间查询</h2>
+<blockquote>
+<p>查询是会把询问的区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>l</mi><mo separator="true">,</mo><mi>r</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[l,r]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mclose">]</span></span></span></span>在线段树上分成<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>log</mi><mo>⁡</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">\log n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span></span></span></span>个节点，所以复杂度为<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>O</mi><mo>(</mo><mi>log</mi><mo>⁡</mo><mi>n</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">O(\log n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">n</span><span class="mclose">)</span></span></span></span></p>
+</blockquote>
+<pre><code class="language-cpp">int ask(int p,int l,int r)
+{
+    if(l&lt;=t[p].l&amp;&amp;r&gt;=t[p].r) return t[p].dat;//完全包含
+    int mid=(t[p].l+t[p].r)&gt;&gt;1;
+    int ret=-(1&lt;&lt;30);
+    if(l&lt;=mid) val=max(val,ask(p&lt;&lt;1,l,r));
+    else val=max(val,ask(p&lt;&lt;1|1,l,r));
+    return ret;
+}
+</code></pre>
+<h2 id="例题">例题</h2>
+<h3 id="ch4301-can-you-answer-on-these-queries-iii">CH4301 Can you answer on these queries III</h3>
+<p><a href="http://noi-test.zzstep.com/contest/0x40%E3%80%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%BF%9B%E9%98%B6%E3%80%8D%E4%BE%8B%E9%A2%98/4301%20Can%20you%20answer%20on%20these%20queries%20III">CH4301</a></p>
+<blockquote>
+<p>维护一个序列，支持单点修改和查询区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[x,y]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">]</span></span></span></span>中的最大连续子段和</p>
+</blockquote>
+<p>问题在于如何维护最大连续字段和，或者说怎么存下最大连续子段和能让它满足<strong>区间加法</strong>，这也是用线段树维护某个东西时要考虑的核心问题</p>
+<p>考虑最大连续字段和的形成方式，可能是整个区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>l</mi><mo separator="true">,</mo><mi>r</mi><mo>]</mo></mrow><annotation encoding="application/x-tex">[l,r]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mclose">]</span></span></span></span>的和，可能是紧靠<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi></mrow><annotation encoding="application/x-tex">l</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span></span></span></span>这边的一段连续和，可能是紧靠<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span></span></span></span>这边的一段连续和</p>
+<p>所以我们可以在线段树中额外维护区间和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mi>u</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">sum</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">u</span><span class="mord mathdefault">m</span></span></span></span>，左端最大连续子段<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>m</mi><mi>a</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">lmax</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mord mathdefault">m</span><span class="mord mathdefault">a</span><span class="mord mathdefault">x</span></span></span></span>和和右端连续子段和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>r</mi><mi>m</mi><mi>a</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">rmax</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord mathdefault">m</span><span class="mord mathdefault">a</span><span class="mord mathdefault">x</span></span></span></span>，以及最大连续字段和<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mi>a</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">dat</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault">d</span><span class="mord mathdefault">a</span><span class="mord mathdefault">t</span></span></span></span></p>
+<p>只需要在从下往上更新的地方注意这几个量的关系，进行维护即可求解，转移的时候有点像区间<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mi>p</mi></mrow><annotation encoding="application/x-tex">dp</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">d</span><span class="mord mathdefault">p</span></span></span></span></p>
+<p>特别注意：<strong>此时如果<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">x&gt;y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span></span></span></span>，请交换<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi><mo separator="true">,</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">x,y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span></span></span></span></strong></p>
+<p>代码见<a href="https://www.cnblogs.com/pyyyyyy/p/13245902.html">CH4301 Can you answer on these queries III</a></p>
+<h3 id="ch4302-interval-gcd">CH4302 Interval GCD</h3>
+<p><a href="http://noi-test.zzstep.com/contest/0x40%E3%80%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%BF%9B%E9%98%B6%E3%80%8D%E4%BE%8B%E9%A2%98/4302%20Interval%20GCD">CH4302</a></p>
+<blockquote>
+<p>维护序列，实现区间加和询问区间的最大公约数</p>
+</blockquote>
+<p>最大公约数怎么维护啊,<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>q</mi><mi>w</mi><mi>q</mi></mrow><annotation encoding="application/x-tex">qwq</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">q</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mord mathdefault" style="margin-right:0.03588em;">q</span></span></span></span></p>
+<p>老祖宗写的《九章算术》告诉我们<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>gcd</mi><mo>⁡</mo><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>=</mo><mi>gcd</mi><mo>⁡</mo><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>−</mo><mi>x</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\gcd(x,y)=\gcd(x,y-x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span style="margin-right:0.01389em;">g</span>cd</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span style="margin-right:0.01389em;">g</span>cd</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">x</span><span class="mclose">)</span></span></span></span>，实际上这个性质对三个数仍然成立，即<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>gcd</mi><mo>⁡</mo><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo separator="true">,</mo><mi>z</mi><mo>)</mo><mo>=</mo><mi>gcd</mi><mo>⁡</mo><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>−</mo><mi>x</mi><mo separator="true">,</mo><mi>z</mi><mo>−</mo><mi>y</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\gcd(x,y,z)=\gcd(x,y-x,z-y)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span style="margin-right:0.01389em;">g</span>cd</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span style="margin-right:0.01389em;">g</span>cd</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.7777700000000001em;vertical-align:-0.19444em;"></span><span class="mord mathdefault">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="mclose">)</span></span></span></span>，更实际上，该性质对任意多整数的都成立。（我不会整理，不过书上提示用数学归纳法）</p>
+<p>因此我们只需要维护差分数组的区间最大公约数即可，这样就满足区间加法了。</p>
+<p>至于区间加就按照差分数组的经典办法处理即可</p>
+<h2 id="延迟标记">延迟标记</h2>
+<blockquote>
+<p>又称懒标记，是一种&quot;延迟“的思想。</p>
+<p>懒标记提供了线段树中从上往下传递信息的方式，实现起来也很简单只需要再额外记录一个标记，在向下的操作中不断检查是否存在标记，并且不断下放即可</p>
+</blockquote>
+<p>代码和普通线段树的相差不大，就是多了一个下放</p>
+<pre><code class="language-cpp">void pushdown()
+{
+	if(t[p].lazy)
+    {
+        t[p&lt;&lt;1].dat+=t[p].lazy*(t[p&lt;&lt;1].r-t[p&lt;&lt;1].l+1);
+        t[p&lt;&lt;1|1].dat+=t[p].lazy*(t[p&lt;&lt;1|1].r-t[p&lt;&lt;1|1].l+1);
+        t[p&lt;&lt;1].lazy+=t[p].lazy;t[p&lt;&lt;1|1].lazy+=t[p].lazy;
+        t[p].lazy=0;
+	}
+}
+</code></pre>
+<p>其他操作不再赘述</p>
+<h1 id="扫描线">扫描线</h1>
+<blockquote>
+<p>用于求<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">n</span></span></span></span>个矩形的面积并，矩形周长，多边形面积等问题。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://wx1.sbimg.cn/2020/07/06/CMJdo.png" alt="扫描线-1" loading="lazy"></figure>
+<p>扫描线的思想如下</p>
+<blockquote>
+<p>用一条竖直的直线（不一定，也可以别的方向）从左到右扫过整个坐标系，直线上被并集图形覆盖的长度只会在每个矩形的左右边界处发生改变，也就是将整个并集图形分割成<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2</mn><mo>∗</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">2*n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">n</span></span></span></span>个段，每一段覆盖直线的长度是固定的，所以各段面积很容易求得，各段面积求和即为并集图形的面积</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://wx1.sbimg.cn/2020/07/06/CMgnT.png" alt="" loading="lazy"></figure>
+<p>介于本文主要侧重于进阶内容，故不详细讲解扫描线了，仅大概说一下核心思路</p>
+<p><strong>注意事项</strong></p>
+<ul>
+<li>用来维护高的线段树和一般的线段树有所不同，他的叶子节点是满足<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mi>l</mi><mo separator="true">,</mo><mi>r</mi><mo>]</mo><mo separator="true">,</mo><mi>l</mi><mo>+</mo><mn>1</mn><mo>=</mo><mi>r</mi></mrow><annotation encoding="application/x-tex">[l,r],l+1=r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.01968em;">l</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span></span></span></span>的</li>
+<li>如果坐标有小数(或值域过大)</li>
+<li>大概这些，想到再加</li>
+</ul>
+<h2 id="例题-2">例题</h2>
+<h3 id="atlantis">Atlantis</h3>
+<p><a href="http://poj.org/problem?id=1151">Atlantis</a></p>
+<blockquote>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">n</span></span></span></span>个矩形放在一起，求它们的面积并</p>
+</blockquote>
+<pre><code class="language-cpp">/*
+@ author:pyyyyyy/guhl37
+-----思路------
+
+-----debug-------
+太久没写其他头文件了，都忘了
+memset必须用#include &lt;cstring&gt;
+*/
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;cstring&gt;
+#include &lt;cstdio&gt;
+#define ls (rt &lt;&lt; 1) 
+#define rs (rt &lt;&lt; 1 | 1)
+using namespace std;
+const int N = 2020;
+int cover[N];
+double len[N], yy[N];
+struct SegmentTree{
+	double x;//边x的坐标
+	double upy, downy;//边上方的y坐标,下方的y坐标
+	int inout;//标记是出边还是入边 
+}line[N];
+int cmp(SegmentTree &amp;a, SegmentTree &amp;b){
+	return a.x &lt; b.x;
+}
+void pushup(int rt, int l, int r)
+{
+	if(cover[rt]) len[rt] = yy[r] - yy[l];
+	else if(l + 1 == r) len[rt] = 0;//到达叶节点
+	else len[rt] = len[ls] + len[rs]; 
+}
+void update(int rt, int yl, int yr, int val, int l, int r)
+{
+//	if(yl &gt; r || yr &lt; l) return ;
+	if(yl &lt;= l &amp;&amp; yr &gt;= r)
+	{
+		cover[rt] += val;
+		pushup(rt, l, r);
+		return ;
+	}
+	if(l + 1 == r) return ;
+	int mid = (l + r) &gt;&gt; 1;
+	if(yl &lt;= mid) update(ls, yl, yr, val, l, mid);
+	if(yr &gt; mid) update(rs, yl, yr, val, mid, r);//注意这里，不是mid+1，因为这里的线段树要进入[1,2][2,3]这样的区间
+	pushup(rt, l, r); 
+	
+}
+void add(int cnt, double x, double by, double ay, int val)
+{
+	line[cnt].downy = ay;
+	line[cnt].upy = by;
+	line[cnt].x = x;
+	line[cnt].inout = val;
+}
+int n, T;
+double  ax, ay, bx, by;//注意别用y1 
+int main()
+{
+//	freopen(&quot;.in&quot;,&quot;r&quot;,stdin);
+//	freopen(&quot;.out&quot;,&quot;w&quot;,stdout);
+	while(scanf(&quot;%d&quot;,&amp;n),n)
+	{
+		memset(line, 0, sizeof(line));
+		memset(yy, 0, sizeof(yy));
+		int cnt=0;
+		for(int i = 1; i &lt;= n; ++i)
+		{
+			scanf(&quot;%lf %lf %lf %lf&quot;,&amp;ax, &amp;ay, &amp;bx, &amp;by);
+			add(++cnt, ax, by, ay, 1); yy[cnt] = ay;
+			add(++cnt, bx, by, ay, -1); yy[cnt] = by;
+		}
+		sort(yy + 1,yy + cnt + 1);
+		sort(line + 1, line + cnt + 1, cmp);
+		int Len = unique(yy + 1, yy + cnt + 1) - yy - 1;
+		double ans = 0;
+		for(int i = 1; i &lt;= cnt; ++i)
+		{
+			ans += len[1] * (line[i].x - line[i - 1].x);
+			int yl, yr, val;
+			yl = lower_bound(yy + 1, yy + Len + 1, line[i].downy) - yy;
+			yr = lower_bound(yy + 1, yy + Len + 1, line[i].upy) - yy;
+			val = line[i].inout;
+			update(1, yl, yr, val, 1, Len);
+		}
+		printf(&quot;Test case #%d\nTotal explored area: %.2f\n\n&quot;, ++T, ans);
+	}
+	return 0;
+}
+</code></pre>
+<h3 id="hdu1828-picture">HDU1828 Picture</h3>
+<p><a href="http://acm.hdu.edu.cn/showproblem.php?pid=1828">Picture</a></p>
+<blockquote>
+<p><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">n</span></span></span></span>个矩形放在一起，求覆盖的周长并。</p>
+</blockquote>
+<p>求周长的并，比求面积的并跟复杂一点</p>
+<p>要解决两个部分：横线和竖线</p>
+<blockquote>
+<p>先更到这里</p>
+</blockquote>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#%E6%99%AE%E9%80%9A%E7%BA%BF%E6%AE%B5%E6%A0%91">普通线段树</a>
+<ul>
+<li><a href="#%E5%82%A8%E5%AD%98">储存</a></li>
+<li><a href="#%E5%BB%BA%E6%A0%91">建树</a></li>
+<li><a href="#%E5%8D%95%E7%82%B9%E4%BF%AE%E6%94%B9">单点修改</a></li>
+<li><a href="#%E5%8C%BA%E9%97%B4%E6%9F%A5%E8%AF%A2">区间查询</a></li>
+<li><a href="#%E4%BE%8B%E9%A2%98">例题</a>
+<ul>
+<li><a href="#ch4301-can-you-answer-on-these-queries-iii">CH4301 Can you answer on these queries III</a></li>
+<li><a href="#ch4302-interval-gcd">CH4302 Interval GCD</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BB%B6%E8%BF%9F%E6%A0%87%E8%AE%B0">延迟标记</a></li>
+</ul>
+</li>
+<li><a href="#%E6%89%AB%E6%8F%8F%E7%BA%BF">扫描线</a>
+<ul>
+<li><a href="#%E4%BE%8B%E9%A2%98-2">例题</a>
+<ul>
+<li><a href="#atlantis">Atlantis</a></li>
+<li><a href="#hdu1828-picture">HDU1828 Picture</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://guhl37.github.io/post/recording/">
+              <h3 class="post-title">
+                杂题选刷
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '337fb7a140c5636a46fa',
+    clientSecret: '67509c3bd63eed6320aab306095b0848354f4c84',
+    repo: 'https://guhl37.github.io/',
+    owner: 'guhl37',
+    admin: ['guhl37'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://guhl37.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
